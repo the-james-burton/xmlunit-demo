@@ -15,6 +15,7 @@ import org.xmlunit.builder.Input;
 import org.xmlunit.diff.Diff;
 import org.xmlunit.diff.Difference;
 
+import javaslang.Tuple;
 import javaslang.collection.Stream;
 
 public class XmlUnitTest {
@@ -35,15 +36,24 @@ public class XmlUnitTest {
     Source one = Input.fromFile("src/test/resources/xml/one.xml").build();
     Source two = Input.fromFile("src/test/resources/xml/two.xml").build();
 
+    // most configuration is done in the builder...
     Diff diff = DiffBuilder.compare(one)
         .withTest(two)
+        .withDifferenceListeners((c, o) -> logger.info("{}:{}", o, c))
+        .ignoreWhitespace()
+        .ignoreComments()
         .build();
-
-    // logger.info(diff.toString());
 
     Stream<Difference> diffs = Stream.ofAll(diff.getDifferences());
 
-    diffs.forEach(d -> logger.info("{}:{}", d.getResult(), d.getComparison()));
+    diffs
+        .map(d -> Tuple.of(
+            d.getResult(),
+            d.getComparison().getControlDetails().getXPath(),
+            d.getComparison().getControlDetails().getValue(),
+            d.getComparison().getTestDetails().getXPath(),
+            d.getComparison().getTestDetails().getValue()))
+        .forEach(t -> logger.info("{}", t));
 
     // assertThat(diff.hasDifferences()).isFalse();
   }

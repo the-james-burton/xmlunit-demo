@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <foo>
   <bar woo="yay">moo</bar>
+  <cat>dog</cat>
 </foo>
